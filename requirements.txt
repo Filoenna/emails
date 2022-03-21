@@ -1,0 +1,6 @@
+fastapi[all]
+uvicorn[standard]
+fastapi-mail
+python-dotenv
+jinja2
+python-multipart
