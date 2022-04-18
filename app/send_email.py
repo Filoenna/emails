@@ -26,19 +26,22 @@ router = APIRouter(
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
 
 
-conf = ConnectionConfig(
-    MAIL_USERNAME=os.getenv("MAIL_USERNAME"),
-    MAIL_PASSWORD=os.getenv("MAIL_PASSWORD"),
-    MAIL_FROM=os.getenv("MAIL_FROM"),
-    MAIL_PORT=int(os.getenv("MAIL_PORT")),
-    MAIL_SERVER=os.getenv("MAIL_SERVER"),
-    MAIL_FROM_NAME=os.getenv("MAIN_FROM_NAME"),
-    MAIL_TLS=True,
-    MAIL_SSL=False,
-    USE_CREDENTIALS=True,
-    VALIDATE_CERTS=True,
-    TEMPLATE_FOLDER=Path(__file__).parent / "templates",
-)
+def set_connection_config(provider: str):
+    conf = ConnectionConfig(
+        MAIL_USERNAME=os.getenv(provider + "_MAIL_USERNAME"),
+        MAIL_PASSWORD=os.getenv(provider + "_MAIL_PASSWORD"),
+        MAIL_FROM=os.getenv(provider + "_MAIL_FROM"),
+        MAIL_PORT=int(os.getenv(provider + "_MAIL_PORT")),
+        MAIL_SERVER=os.getenv(provider + "_MAIL_SERVER"),
+        MAIL_FROM_NAME=os.getenv(provider + "_MAIN_FROM_NAME"),
+        MAIL_TLS=True,
+        MAIL_SSL=False,
+        USE_CREDENTIALS=True,
+        VALIDATE_CERTS=True,
+        TEMPLATE_FOLDER=Path(__file__).parent / "templates",
+    )
+    return conf
+
 
 html = """
     <h4 style="color: magenta;">Hello Stranger!</h4>
@@ -121,6 +124,7 @@ async def email_from_template(
 ) -> JSONResponse:
     data = await request.json()
     token = data.get("token")
+    provider = data.get("provider")
     sso(token)
     message = MessageSchema(
         subject=email.dict().get("subject"),
@@ -128,7 +132,7 @@ async def email_from_template(
         template_body=email.dict().get("body"),
         subtype="html",
     )
-
+    conf = set_connection_config(provider)
     fm = FastMail(conf)
 
     await fm.send_message(message, template_name=data.get("template") + ".html")
