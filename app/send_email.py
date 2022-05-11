@@ -4,7 +4,7 @@ from fastapi_mail import ConnectionConfig
 import requests
 from fastapi_mail import FastMail, MessageSchema, ConnectionConfig
 from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
-from pydantic import EmailStr, BaseModel
+from pydantic import EmailStr, BaseModel, BaseSettings
 from typing import List, Dict, Any
 from pathlib import Path
 from fastapi.responses import JSONResponse
@@ -26,7 +26,14 @@ router = APIRouter(
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
 
 
+class Settings(BaseSettings):
+    class Config:
+        env_file = ".env"
+        env_file_encoding = "utf-8"
+
+
 def set_connection_config(provider: str):
+    print(os.getenv(provider + "_MAIL_PORT"))
     conf = ConnectionConfig(
         MAIL_USERNAME=os.getenv(provider + "_MAIL_USERNAME"),
         MAIL_PASSWORD=os.getenv(provider + "_MAIL_PASSWORD"),
@@ -41,13 +48,6 @@ def set_connection_config(provider: str):
         TEMPLATE_FOLDER=Path(__file__).parent / "templates",
     )
     return conf
-
-
-html = """
-    <h4 style="color: magenta;">Hello Stranger!</h4>
-    <p>This email is just for test.</p>
-    <p><em>Filoenna</em></p>
-"""
 
 
 class EmailSchema(BaseModel):
@@ -103,6 +103,7 @@ async def email(
 ) -> JSONResponse:
     data = await request.json()
     token = data.get("token")
+    provider = data.get("provider")
     sso(token)
     print(email.dict)
     message = MessageSchema(
@@ -110,7 +111,7 @@ async def email(
         recipients=email.dict().get("email"),
         body=email.dict().get("body"),
     )
-
+    conf = set_connection_config(provider)
     fm = FastMail(conf)
 
     background_tasks.add_task(fm.send_message, message)
