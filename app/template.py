@@ -19,8 +19,10 @@ class Template(metaclass=SingletonMeta):
 
 
 def test_singleton(fields):
-    singleton = Template(fields)
-    singleton.print_dict()
+    singleton1 = Template(fields)
+    singleton2 = Template({"username": "Daisy", "email": "daisy"})
+    singleton1.print_dict()
+    singleton2.print_dict()
 
 
-test_singleton({"username": "Filoenna", "email": "machefi2"})
+test_singleton({"username": {"Filoenna": str, str: "email", int: "machefi2"}})
