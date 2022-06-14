@@ -16,13 +16,3 @@ class Template(metaclass=SingletonMeta):
     def print_dict(self):
         for k, v in self.fields.items():
             print(f"{k}: {v}")
-
-
-def test_singleton(fields):
-    singleton1 = Template(fields)
-    singleton2 = Template({"username": "Daisy", "email": "daisy"})
-    singleton1.print_dict()
-    singleton2.print_dict()
-
-
-test_singleton({"username": {"Filoenna": str, str: "email", int: "machefi2"}})

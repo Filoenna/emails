@@ -8,9 +8,10 @@ from googleapiclient.errors import HttpError
 import base64
 from email.mime.text import MIMEText
 from .. import mail
+from . import provider
 
 
-class GoogleApiProvider:
+class GoogleApiProvider(provider.Provider):
 
     CLIENT_FILE: str
     API_NAME: str = "gmail"

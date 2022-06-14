@@ -1,11 +1,12 @@
 import os
 
 from dotenv import load_dotenv
+from . import provider
 
 load_dotenv()
 
 
-class SMTPProvider:
+class SMTPProvider(provider.Provider):
     def __init__(self, name):
         self.username = os.getenv(name + "_MAIL_PASSWORD")
         self.password = os.getenv("GOOGLE_MAIL_PASSWORD")
