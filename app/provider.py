@@ -5,3 +5,7 @@ class Provider(ABC):
     @abstractmethod
     def send_mail(self):
         pass
+
+    @abstractmethod
+    def prepare_message(self):
+        pass

@@ -49,6 +49,9 @@ class GoogleApiProvider(provider.Provider):
         except HttpError as error:
             print(f"An error occurred: {error}")
 
+    def prepare_message(self):
+        pass
+
     def send_mail(self):
         try:
             # message = MIMEText("This is automated mail.", 'html') <- do wysyłania szablonów
