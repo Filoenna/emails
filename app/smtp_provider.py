@@ -8,7 +8,7 @@ from dotenv import load_dotenv
 from . import provider
 from . import mail
 from pathlib import Path
-from fastapi_mail import ConnectionConfig, FastMail
+from fastapi_mail import ConnectionConfig, FastMail, MessageSchema
 
 load_dotenv()
 
@@ -53,21 +53,19 @@ class SMTPProvider(provider.Provider):
 
         return conf
 
-    def prepare_message(self):
-        return super().prepare_message()
-
-    async def send_email(
-        self, request: Request, email: mail.EmailSchemaForTemplates
-    ) -> JSONResponse:
-        data = await request.json()
-        token = data.get("token")
-        sso(token)
-        message = mail.MessageSchema(
+    def prepare_message(self, email: mail.EmailSchema):
+        message = MessageSchema(
             subject=email.dict().get("subject"),
             recipients=email.dict().get("email"),
             template_body=email.dict().get("body"),
             subtype="html",
         )
+        return message
+
+    async def send_mail(self, request: Request, message: MessageSchema) -> JSONResponse:
+        data = await request.json()
+        token = data.get("token")
+        sso(token)
         conf = self.set_connection_config()
         fm = FastMail(conf)
 

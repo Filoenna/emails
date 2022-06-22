@@ -19,10 +19,10 @@ templates = template.Template(
     }
 )
 
-providers = providers.Provider(
+providers = providers.Providers(
     {
         "google_api": api_provider.GoogleApiProvider(),
-        "google": smtp_provider.SMTPProvider("GOOGLE"),
+        "google": smtp_provider.SMTPProvider("GMAIL"),
     }
 )
 
@@ -32,9 +32,10 @@ async def home():
     return "Home page"
 
 
-@app.get("/send_mail/")
-def send_mail(
-    request: Request, provider_name: str, email: mail.EmailSchemaForTemplates
-):
+@app.post("/send_mail/")
+async def send_mail(request: Request, email: mail.EmailSchema):
+    data = await request.json()
+    provider_name = data.get("provider")
     provider = providers[provider_name]
-    provider.send_email()
+    prepared_message = provider.prepare_message(email)
+    provider.send_mail(prepared_message)

@@ -1,3 +1,4 @@
+from email.message import EmailMessage
 import os.path
 
 from google.oauth2.credentials import Credentials
@@ -7,7 +8,7 @@ from googleapiclient.discovery import build
 from googleapiclient.errors import HttpError
 import base64
 from email.mime.text import MIMEText
-from .. import mail
+from . import mail
 from . import provider
 
 
@@ -29,7 +30,7 @@ class GoogleApiProvider(provider.Provider):
                 creds.refresh(Request())
             else:
                 flow = InstalledAppFlow.from_client_secrets_file(
-                    "credentials.json", self.SCOPES
+                    "./app/credentials.json", self.SCOPES
                 )
                 creds = flow.run_local_server(port=8080)
             # Save the credentials for the next run
@@ -49,19 +50,19 @@ class GoogleApiProvider(provider.Provider):
         except HttpError as error:
             print(f"An error occurred: {error}")
 
-    def prepare_message(self):
-        pass
+    def prepare_message(self, email: mail.EmailSchema):
+        # message = MIMEText("This is automated mail.", 'html') <- do wysyłania szablonów
+        # message = mail.Mail()
+        message = EmailMessage()
+        message.set_content(email.body)
+        message["To"] = email.email
+        message["From"] = "machefi1@gmail.com"
+        message["Subject"] = email.subject
+        encoded_message = base64.urlsafe_b64encode(message.as_bytes()).decode()
+        return encoded_message
 
-    def send_mail(self):
+    def send_mail(self, encoded_message):
         try:
-            # message = MIMEText("This is automated mail.", 'html') <- do wysyłania szablonów
-            # message = mail.Mail()
-            message = MIMEText("This is automated mail.")
-            message["To"] = "zzajkiewicz@gmail.com"
-            message["From"] = "machefi1@gmail.com"
-            message["Subject"] = "Attempt at gmail API 2"
-            encoded_message = base64.urlsafe_b64encode(message.as_bytes()).decode()
-
             create_message = {"raw": encoded_message}
 
             service = self.create_service()
